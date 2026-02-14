@@ -1,0 +1,37 @@
+.node {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  cursor: grab;
+  border-radius: 14px;
+  border: 1px solid rgba(23, 47, 73, 0.22);
+  background: linear-gradient(165deg, #fffdf8 0%, #ffe8cf 100%);
+  color: #1d2f43;
+  box-shadow:
+    0 10px 22px rgba(19, 45, 78, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  transition: box-shadow 150ms ease, transform 150ms ease, border-color 150ms ease;
+}
+
+.node:hover {
+  border-color: rgba(14, 159, 140, 0.52);
+  box-shadow:
+    0 14px 26px rgba(15, 44, 79, 0.2),
+    0 0 0 2px rgba(14, 159, 140, 0.1);
+  transform: translateY(-1px);
+}
+
+.node:active {
+  cursor: grabbing;
+  transform: scale(0.985);
+  box-shadow:
+    0 6px 14px rgba(15, 44, 79, 0.24),
+    0 0 0 2px rgba(255, 136, 64, 0.18);
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
