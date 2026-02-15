@@ -108,6 +108,50 @@
   align-items: center;
 }
 
+.boardControls {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px;
+  border-radius: 10px;
+  background: rgba(204, 224, 255, 0.1);
+}
+
+.controlButton {
+  border: 0;
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+  background: rgba(111, 147, 212, 0.2);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 120ms ease, transform 120ms ease, color 120ms ease;
+}
+
+.controlButton:hover {
+  background: rgba(111, 147, 212, 0.32);
+}
+
+.controlButton:active {
+  transform: translateY(1px);
+}
+
+.controlIcon {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2.2;
+}
+
 .rendererToggle {
   display: inline-flex;
   gap: 5px;
@@ -280,5 +324,10 @@
     left: 12px;
     right: 12px;
     width: calc(100% - 24px);
+  }
+
+  .boardControls {
+    left: 12px;
+    bottom: 12px;
   }
 }

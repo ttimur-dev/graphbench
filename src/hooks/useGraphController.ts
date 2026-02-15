@@ -7,6 +7,7 @@ import type { NodeDragStartHandler, NodeType } from "../types/node";
 
 const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 3;
+const ZOOM_STEP = 0.2;
 
 const INITIAL_NODES: NodeType[] = [
   { id: "1", width: 100, height: 50, position: { x: 0, y: 0 } },
@@ -69,17 +70,15 @@ export const useGraphController = () => {
     nodesRef.current = nodes;
   }, [nodes]);
 
-  const centerSceneOnStart = useCallback(() => {
-    if (hasInitialCenterRef.current) return;
-
+  const centerGraph = useCallback(() => {
     const boardEl = boardRef.current;
-    if (!boardEl) return;
+    if (!boardEl) return false;
 
     const rect = boardEl.getBoundingClientRect();
-    if (rect.width <= 0 || rect.height <= 0) return;
+    if (rect.width <= 0 || rect.height <= 0) return false;
 
     const bounds = getNodesBounds(nodesRef.current);
-    if (!bounds) return;
+    if (!bounds) return false;
 
     setViewport((current) => ({
       ...current,
@@ -87,8 +86,48 @@ export const useGraphController = () => {
       panY: rect.height / 2 - bounds.centerY * current.zoom,
     }));
 
-    hasInitialCenterRef.current = true;
+    return true;
   }, []);
+
+  const centerSceneOnStart = useCallback(() => {
+    if (hasInitialCenterRef.current) return;
+    const centered = centerGraph();
+    if (centered) {
+      hasInitialCenterRef.current = true;
+    }
+  }, [centerGraph]);
+
+  const zoomAroundBoardPoint = useCallback((deltaZoom: number, boardX: number, boardY: number) => {
+    setViewport((current) => {
+      const nextZoom = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, current.zoom + deltaZoom));
+      if (nextZoom === current.zoom) return current;
+
+      const worldX = (boardX - current.panX) / current.zoom;
+      const worldY = (boardY - current.panY) / current.zoom;
+
+      return {
+        zoom: nextZoom,
+        panX: boardX - worldX * nextZoom,
+        panY: boardY - worldY * nextZoom,
+      };
+    });
+  }, []);
+
+  const zoomIn = useCallback(() => {
+    const boardEl = boardRef.current;
+    if (!boardEl) return;
+
+    const rect = boardEl.getBoundingClientRect();
+    zoomAroundBoardPoint(ZOOM_STEP, rect.width / 2, rect.height / 2);
+  }, [zoomAroundBoardPoint]);
+
+  const zoomOut = useCallback(() => {
+    const boardEl = boardRef.current;
+    if (!boardEl) return;
+
+    const rect = boardEl.getBoundingClientRect();
+    zoomAroundBoardPoint(-ZOOM_STEP, rect.width / 2, rect.height / 2);
+  }, [zoomAroundBoardPoint]);
 
   useEffect(() => {
     centerSceneOnStart();
@@ -299,6 +338,7 @@ export const useGraphController = () => {
 
   return {
     boardRef,
+    centerGraph,
     edges,
     nodeById,
     nodes,
@@ -307,5 +347,7 @@ export const useGraphController = () => {
     setRenderMode: setRenderModeSafe,
     viewport,
     webGpuAvailable,
+    zoomIn,
+    zoomOut,
   };
 };

@@ -1,11 +1,24 @@
 import { useGraphController } from "./hooks/useGraphController";
+import { LocateFixed, Minus, Plus } from "lucide-react";
 import { DomGraphRenderer } from "./renderers/DomGraphRenderer";
 import { WebGpuGraphRenderer } from "./renderers/WebGpuGraphRenderer";
 import styles from "./App.module.css";
 
 function App() {
-  const { boardRef, edges, nodeById, nodes, onNodeDragStart, renderMode, setRenderMode, viewport, webGpuAvailable } =
-    useGraphController();
+  const {
+    boardRef,
+    centerGraph,
+    edges,
+    nodeById,
+    nodes,
+    onNodeDragStart,
+    renderMode,
+    setRenderMode,
+    viewport,
+    webGpuAvailable,
+    zoomIn,
+    zoomOut,
+  } = useGraphController();
 
   return (
     <main className={styles.app}>
@@ -51,6 +64,30 @@ function App() {
               Layers
             </button>
           </nav>
+
+          <div className={styles.boardControls} data-role="toolbar">
+            <button
+              type="button"
+              className={styles.controlButton}
+              onClick={zoomOut}
+              title="Zoom out"
+              aria-label="Zoom out"
+            >
+              <Minus className={styles.controlIcon} />
+            </button>
+            <button type="button" className={styles.controlButton} onClick={zoomIn} title="Zoom in" aria-label="Zoom in">
+              <Plus className={styles.controlIcon} />
+            </button>
+            <button
+              type="button"
+              className={styles.controlButton}
+              onClick={centerGraph}
+              title="Center graph"
+              aria-label="Center graph"
+            >
+              <LocateFixed className={styles.controlIcon} />
+            </button>
+          </div>
 
           {renderMode === "dom" ? (
             <DomGraphRenderer
