@@ -1,44 +1,54 @@
 import { useEffect, useRef, useState } from "react";
-import { CreateWebWorkerMLCEngine } from "@mlc-ai/web-llm";
 import type { ChatCompletionMessageParam, WebWorkerMLCEngine } from "@mlc-ai/web-llm";
-
-const selectedModel = "Llama-3.2-1B-Instruct-q4f32_1-MLC";
+import { createWorkerEngine } from "../../../lib/web-llm";
+import type { ChatEngineStatus } from "./types";
 
 export const useLLMChatController = () => {
   const [messages, setMessages] = useState<ChatCompletionMessageParam[]>([
     { role: "system", content: "You are a helpful AI assistant." },
   ]);
+  const [engineStatus, setEngineStatus] = useState<ChatEngineStatus>("idle");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const engine = useRef<WebWorkerMLCEngine>(null);
   const messagesRef = useRef<ChatCompletionMessageParam[]>(messages);
-
-  console.log(messages);
 
   useEffect(() => {
     messagesRef.current = messages;
   }, [messages]);
 
   useEffect(() => {
-    const startLLM = async () => {
-      const initProgressCallback = (initProgress: unknown) => {
-        console.log(initProgress);
-      };
+    let disposed = false;
 
-      engine.current = await CreateWebWorkerMLCEngine(
-        new Worker(new URL("../worker.ts", import.meta.url), {
-          type: "module",
-        }),
-        selectedModel,
-        { initProgressCallback }, // engineConfig
-      );
+    const startLLM = async () => {
+      setEngineStatus("loading");
+      setErrorMessage(null);
+
+      try {
+        const nextEngine = await createWorkerEngine();
+        if (disposed) return;
+
+        engine.current = nextEngine;
+        setEngineStatus("ready");
+      } catch {
+        if (disposed) return;
+
+        setEngineStatus("error");
+        setErrorMessage("Failed to initialize LLM engine.");
+      }
     };
+
     startLLM();
+
+    return () => {
+      disposed = true;
+    };
   }, []);
 
   const onMessageSend = async (rawInput: string) => {
     const userInput = rawInput.trim();
     if (!userInput) return;
-    if (!engine.current) return;
+    if (engineStatus !== "ready" || !engine.current) return;
 
     setLoading(true);
 
@@ -69,5 +79,5 @@ export const useLLMChatController = () => {
     }
   };
 
-  return { messages, loading, onMessageSend };
+  return { engineStatus, errorMessage, loading, messages, onMessageSend };
 };
